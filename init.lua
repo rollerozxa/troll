@@ -355,7 +355,7 @@ register_troll("t-shit", {
 })
 
 register_troll("t-eyes", {
-	description = "Spawns lots of eyes around the player,
+	description = "Spawns lots of eyes around the player",
 	func = function(_, params)
 		local player = minetest.get_player_by_name(params)
 		if not player then
