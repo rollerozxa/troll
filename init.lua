@@ -65,12 +65,12 @@ register_troll("t-blackparticles", {
 			maxvel = { x = 1, y = 1, z = 1 },
 			minacc = { x = 1, y = 1, z = 1 },
 			maxacc = { x = -1, y = -1, z = -1 },
-			minexptime = 10,
-			maxexptime = 20,
+			minexptime = 3,
+			maxexptime = 5,
 			minsize = 7,
 			maxsize = 16,
 			texture = "black.png",
-			collisiondetection = true
+			collisiondetection = false
 		})
 	end
 })
@@ -285,93 +285,6 @@ register_troll("t-msg", {
 	end,
 })
 
-register_troll("t-diamond", {
-	description = "Spawns lots of diamonds around the player",
-	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
-		if not player then
-			return
-		end
-		local pos1 = player:get_pos()
-		minetest.add_particlespawner({
-			amount = 50,
-			time = 60,
-			minpos = { x = pos1.x - 15, y = pos1.y, z = pos1.z - 15 },
-			maxpos = { x = pos1.x + 15, y = pos1.y, z = pos1.z + 15 },
-			minvel = { x = 0.2, y = 0.2, z = 0.2 },
-			maxvel = { x = 0.4, y = 0.8, z = 0.4 },
-			minacc = { x = -0.2, y = 0, z = -0.2 },
-			maxacc = { x = 0.2, y = 0.1, z = 0.2 },
-			minexptime = 6,
-			maxexptime = 8,
-			minsize = 10,
-			maxsize = 10,
-			collisiondetection = true,
-			vertical = false,
-			texture = "default_diamond.png",
-			playername = player,
-		})
-	end
-})
-
-register_troll("t-shit", {
-	description = "Spawns lots of shit around the player",
-	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
-		if not player then
-			return
-		end
-		local pos1 = player:get_pos()
-		minetest.add_particlespawner({
-			amount = 200,
-			time = 60,
-			minpos = { x = pos1.x - 15, y = pos1.y, z = pos1.z - 15 },
-			maxpos = { x = pos1.x + 15, y = pos1.y, z = pos1.z + 15 },
-			minvel = { x = 0.2, y = 0.2, z = 0.2 },
-			maxvel = { x = 0.4, y = 0.8, z = 0.4 },
-			minacc = { x = -0.2, y = 0, z = -0.2 },
-			maxacc = { x = 0.2, y = 0.1, z = 0.2 },
-			minexptime = 6,
-			maxexptime = 8,
-			minsize = 10,
-			maxsize = 10,
-			collisiondetection = true,
-			vertical = false,
-			texture = "shit.png",
-			playername = player,
-		})
-	end
-})
-
-register_troll("t-eyes", {
-	description = "Spawns lots of eyes around the player,
-	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
-		if not player then
-			return
-		end
-		local pos1 = player:get_pos()
-		minetest.add_particlespawner({
-			amount = 150,
-			time = 60,
-			minpos = { x = pos1.x - 15, y = pos1.y, z = pos1.z - 15 },
-			maxpos = { x = pos1.x + 15, y = pos1.y, z = pos1.z + 15 },
-			minvel = { x = 0.2, y = 0.2, z = 0.2 },
-			maxvel = { x = 0.4, y = 0.8, z = 0.4 },
-			minacc = { x = -0.2, y = 0, z = -0.2 },
-			maxacc = { x = 0.2, y = 0.1, z = 0.2 },
-			minexptime = 20,
-			maxexptime = 30,
-			minsize = 10,
-			maxsize = 20,
-			collisiondetection = true,
-			vertical = false,
-			texture = "eye.png",
-			playername = player,
-		})
-	end
-})
-
 register_troll("t-chat", {
 	params = "<from> <msg>",
 	description = "Impersonate someone and send a message as them (also works with made-up players)",
@@ -390,4 +303,66 @@ register_troll("t-grant", {
 		if not priv or not to or not from then return "syntax error.  usage: /t-grant <from> <to> <priv>" end
 		minetest.chat_send_player(to, from.." granted you priviliges: "..priv)
 	end,
+})
+
+local function troll_particlespawner(type, pos, texture, playername)
+	local def = {
+		amount = 2000,
+		time = 30,
+		minvel = { x = 0.2, y = 0.2, z = 0.2 },
+		maxvel = { x = 0.4, y = 0.8, z = 0.4 },
+		minacc = { x = -0.2, y = 0, z = -0.2 },
+		maxacc = { x = 0.2, y = 0.1, z = 0.2 },
+		minexptime = 6,
+		maxexptime = 8,
+		minsize = 10,
+		maxsize = 10,
+	}
+
+	def.minpos = { x = pos.x - 10, y = pos.y, z = pos.z - 10 }
+	def.maxpos = { x = pos.x + 10, y = pos.y, z = pos.z + 10 }
+
+	def.texture = texture
+	if playername then def.playername = playername end
+
+	return def
+end
+
+register_troll("t-diamond", {
+	description = "Spawns lots of diamonds around the player",
+	func = function(_, params)
+		local player = minetest.get_player_by_name(params)
+		if not player then
+			return
+		end
+
+		local pos = player:get_pos()
+		minetest.add_particlespawner(troll_particlespawner(1, pos, "default_diamond.png", params))
+	end
+})
+
+register_troll("t-shit", {
+	description = "Spawns lots of shit around the player",
+	func = function(_, params)
+		local player = minetest.get_player_by_name(params)
+		if not player then
+			return
+		end
+
+		local pos = player:get_pos()
+		minetest.add_particlespawner(troll_particlespawner(1, pos, "shit.png", params))
+	end
+})
+
+register_troll("t-eyes", {
+	description = "Spawns lots of eyes around the player,
+	func = function(_, params)
+		local player = minetest.get_player_by_name(params)
+		if not player then
+			return
+		end
+
+		local pos = player:get_pos()
+		minetest.add_particlespawner(troll_particlespawner(1, pos, "eye.png", params))
+	end
 })
