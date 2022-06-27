@@ -19,61 +19,10 @@ local function register_troll(name, def)
 	minetest.register_chatcommand(name, def)
 end
 
-register_troll("t-smoke", {
-	description = "Spawns lots of smoke around the player",
-	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
-		if not player then
-			return
-		end
-		local pos1 = player:get_pos()
-		minetest.add_particlespawner({
-			amount = 60000,
-			time = 30,
-			minpos = { x = pos1.x - 10, y = pos1.y - 10, z = pos1.z - 10 },
-			maxpos = { x = pos1.x + 10, y = pos1.y + 10, z = pos1.z + 10 },
-			minvel = { x = 0.2, y = 0.2, z = 0.2 },
-			maxvel = { x = 0.4, y = 0.8, z = 0.4 },
-			minacc = { x = -0.2, y = 0, z = -0.2 },
-			maxacc = { x = 0.2, y = 0.1, z = 0.2 },
-			minexptime = 6,
-			maxexptime = 8,
-			minsize = 10,
-			maxsize = 12,
-			collisiondetection = false,
-			vertical = false,
-			texture = "tnt_smoke.png",
-			playername = player,
-		})
-	end
-})
-
-register_troll("t-blackparticles", {
-	description = "Spawns lots of black particles around the player",
-	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
-		if not player then
-			return
-		end
-		local pos1 = player:get_pos()
-		minetest.add_particlespawner({
-			amount = 10000,
-			time = 60,
-			minpos = { x = pos1.x + 5, y = pos1.y, z = pos1.z + 5 },
-			maxpos = { x = pos1.x - 5, y = pos1.y, z = pos1.z - 5 },
-			minvel = { x = -0, y = 0, z = -0 },
-			maxvel = { x = 1, y = 1, z = 1 },
-			minacc = { x = 1, y = 1, z = 1 },
-			maxacc = { x = -1, y = -1, z = -1 },
-			minexptime = 3,
-			maxexptime = 5,
-			minsize = 7,
-			maxsize = 16,
-			texture = "black.png",
-			collisiondetection = false
-		})
-	end
-})
+-- Check for troll commands that require things found in primarily MTG
+local function has_default()
+	return default ~= nil
+end
 
 register_troll("t-ban", {
 	description = "Fake ban a player",
@@ -87,16 +36,18 @@ register_troll("t-ban", {
 	end
 })
 
-register_troll("t-hp", {
-	description = "Remove 2 HP from a player",
-	func = function(_, player, amount)
-		local player = minetest.get_player_by_name(params)
-		if not player then
-			return
+if minetest.settings:get_bool("enable_damage", false) then
+	register_troll("t-hp", {
+		description = "Remove 2 HP from a player",
+		func = function(_, player, amount)
+			local player = minetest.get_player_by_name(params)
+			if not player then
+				return
+			end
+			player:set_hp(player:get_hp() - 2)
 		end
-		player:set_hp(player:get_hp() - 2)
-	end
-})
+	})
+end
 
 register_troll("t-error", {
 	description = "Kick the player with an error message",
@@ -121,12 +72,12 @@ register_troll("t-black", {
 			position      = { x = 0.5, y = 0.5 },
 			offset        = { x = 0, y = 0 },
 			text          = "black.png",
-			alignment     = { x = 0, y = 0 }, -- center aligned
-			scale         = { x = 4000, y = 2000 }, -- covered late
+			alignment     = { x = 0, y = 0 },
+			scale         = { x = 4000, y = 2000 },
 			number        = 0xD61818,
 		})
 
-		minetest.after(20, function() player:hud_remove(idx) end)
+		minetest.after(30, function() player:hud_remove(idx) end)
 	end
 })
 
@@ -139,9 +90,8 @@ register_troll("t-freeze", {
 		end
 		player:set_physics_override({
 			speed = 0,
-			jump = 5.0,
-			gravity = 0
-		})
+			jump = 0,
+			gravity = 0})
 	end,
 })
 
@@ -155,8 +105,7 @@ register_troll("t-unfreeze", {
 		player:set_physics_override({
 			speed = 1,
 			jump = 1,
-			gravity = 1
-		})
+			gravity = 1})
 	end,
 })
 
@@ -170,8 +119,7 @@ register_troll("t-nogravity", {
 		player:set_physics_override({
 			speed = 1,
 			jump = 5.0,
-			gravity = 0.05
-		})
+			gravity = 0.05})
 	end,
 })
 
@@ -184,42 +132,8 @@ register_troll("t-teleport", {
 		end
 
 		local newpos = player:get_pos()
-		newpos.x = newpos.x + math.random(10, 20)
-		newpos.z = newpos.z + math.random(10, 20)
-		player:set_pos(newpos)
-	end,
-})
-
-register_troll("t-jail", {
-	description = "Build a jail at the player's position",
-	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
-		if not player then
-			return
-		end
-		minetest.place_schematic(player:get_pos(), minetest.get_modpath("troll") .. "/schems/jail.mts", "random", nil, false)
-
-		local newpos = player:get_pos()
-		newpos.x = newpos.x + 1
-		newpos.z = newpos.z + 1
-		newpos.y = newpos.y + 1
-		player:set_pos(newpos)
-	end,
-})
-
-register_troll("t-lava", {
-	description = "Put the player inside of lava",
-	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
-		if not player then
-			return
-		end
-		minetest.place_schematic(player:get_pos(), minetest.get_modpath("troll") .. "/schems/lava.mts", "random", nil, false)
-
-		local newpos = player:get_pos()
-		newpos.x = newpos.x + 1
-		newpos.z = newpos.z + 1
-		newpos.y = newpos.y + 0.5
+		newpos.x = newpos.x + math.random(-20, 20)
+		newpos.z = newpos.z + math.random(-20, 20)
 		player:set_pos(newpos)
 	end,
 })
@@ -260,7 +174,7 @@ register_troll("t-mob", {
 })
 
 register_troll("t-hole", {
-	description = "Make a 5 node deep hole the player falls into",
+	description = "Make a 10 node deep hole the player falls into",
 	func = function(_, params)
 		local player = minetest.get_player_by_name(params)
 		if not player then
@@ -268,7 +182,7 @@ register_troll("t-hole", {
 		end
 
 		local newpos = vector.round(player:get_pos())
-		for i = 1, 5 do
+		for i = 1, 10 do
 			newpos.y = newpos.y - 1
 			minetest.set_node(newpos, { name="air" })
 		end
@@ -301,9 +215,49 @@ register_troll("t-grant", {
 	func = function(name, params)
 		local from, to, priv = params:match("^(%S+)%s(%S+)%s(.+)$")
 		if not priv or not to or not from then return "syntax error.  usage: /t-grant <from> <to> <priv>" end
-		minetest.chat_send_player(to, from.." granted you priviliges: "..priv)
+		minetest.chat_send_player(to, from.." granted you privileges: "..priv)
 	end,
 })
+
+-- Spawn schematics at player position, requires default
+
+if has_default() then
+register_troll("t-jail", {
+	description = "Build a jail at the player's position",
+	func = function(_, params)
+		local player = minetest.get_player_by_name(params)
+		if not player then
+			return
+		end
+		minetest.place_schematic(player:get_pos(), minetest.get_modpath("troll") .. "/schems/jail.mts", "random", nil, false)
+
+		local newpos = player:get_pos()
+		newpos.x = newpos.x + 1
+		newpos.z = newpos.z + 1
+		newpos.y = newpos.y + 1
+		player:set_pos(newpos)
+	end,
+})
+
+register_troll("t-lava", {
+	description = "Put the player inside of lava",
+	func = function(_, params)
+		local player = minetest.get_player_by_name(params)
+		if not player then
+			return
+		end
+		minetest.place_schematic(player:get_pos(), minetest.get_modpath("troll") .. "/schems/lava.mts", "random", nil, false)
+
+		local newpos = player:get_pos()
+		newpos.x = newpos.x + 1
+		newpos.z = newpos.z + 1
+		newpos.y = newpos.y + 0.5
+		player:set_pos(newpos)
+	end,
+})
+end
+
+-- Epic trolling commands that spawn particles.
 
 local function troll_particlespawner(type, pos, texture, playername)
 	local def = {
@@ -328,18 +282,20 @@ local function troll_particlespawner(type, pos, texture, playername)
 	return def
 end
 
-register_troll("t-diamond", {
-	description = "Spawns lots of diamonds around the player",
-	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
-		if not player then
-			return
-		end
+if has_default() then
+	register_troll("t-diamond", {
+		description = "Spawns lots of diamonds around the player",
+		func = function(_, params)
+			local player = minetest.get_player_by_name(params)
+			if not player then
+				return
+			end
 
-		local pos = player:get_pos()
-		minetest.add_particlespawner(troll_particlespawner(1, pos, "default_diamond.png", params))
-	end
-})
+			local pos = player:get_pos()
+			minetest.add_particlespawner(troll_particlespawner(1, pos, "default_diamond.png", params))
+		end
+	})
+end
 
 register_troll("t-shit", {
 	description = "Spawns lots of shit around the player",
@@ -350,7 +306,7 @@ register_troll("t-shit", {
 		end
 
 		local pos = player:get_pos()
-		minetest.add_particlespawner(troll_particlespawner(1, pos, "shit.png", params))
+		minetest.add_particlespawner(troll_particlespawner(1, pos, "troll_shit.png", params))
 	end
 })
 
@@ -363,6 +319,32 @@ register_troll("t-eyes", {
 		end
 
 		local pos = player:get_pos()
-		minetest.add_particlespawner(troll_particlespawner(1, pos, "eye.png", params))
+		minetest.add_particlespawner(troll_particlespawner(1, pos, "troll_eye.png", params))
+	end
+})
+
+register_troll("t-smoke", {
+	description = "Spawns lots of smoke around the player",
+	func = function(_, params)
+		local player = minetest.get_player_by_name(params)
+		if not player then
+			return
+		end
+
+		local pos = player:get_pos()
+		minetest.add_particlespawner(troll_particlespawner(1, pos, "troll_smoke.png", params))
+	end
+})
+
+register_troll("t-blackparticles", {
+	description = "Spawns lots of black particles around the player",
+	func = function(_, params)
+		local player = minetest.get_player_by_name(params)
+		if not player then
+			return
+		end
+
+		local pos = player:get_pos()
+		minetest.add_particlespawner(troll_particlespawner(1, pos, "troll_black.png", params))
 	end
 })
