@@ -21,7 +21,7 @@ end
 
 -- Check for troll commands that require things found in primarily MTG
 local function has_default()
-	return default ~= nil
+	return minetest.global_exists("default")
 end
 
 register_troll("t-ban", {
