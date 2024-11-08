@@ -8,7 +8,7 @@
       \__\/     \_\/ \_\/     \_____\/     \_____\/     \_____\/
 ]]
 
-minetest.register_privilege("troll", "Player can do basic trolling")
+core.register_privilege("troll", "Player can do basic trolling")
 
 local function register_troll(name, def)
 	def.privs = def.privs or {troll=true}
@@ -16,31 +16,31 @@ local function register_troll(name, def)
 	-- Most commands only take one argument which is the player
 	def.params = def.params or "<player>"
 
-	minetest.register_chatcommand(name, def)
+	core.register_chatcommand(name, def)
 end
 
 -- Check for troll commands that require things found in primarily MTG
 local function has_default()
-	return minetest.global_exists("default")
+	return core.global_exists("default")
 end
 
 register_troll("t-ban", {
 	description = "Fake ban a player",
 	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
+		local player = core.get_player_by_name(params)
 		if not player then
 			return
 		end
-		minetest.ban_player(player:get_player_name())
-		minetest.after(0.5, function() minetest.unban_player_or_ip(player:get_player_name()) end)
+		core.ban_player(player:get_player_name())
+		core.after(0.5, function() core.unban_player_or_ip(player:get_player_name()) end)
 	end
 })
 
-if minetest.settings:get_bool("enable_damage", false) then
+if core.settings:get_bool("enable_damage", false) then
 	register_troll("t-hp", {
 		description = "Remove 2 HP from a player",
 		func = function(_, player, amount)
-			local player = minetest.get_player_by_name(params)
+			local player = core.get_player_by_name(params)
 			if not player then
 				return
 			end
@@ -52,18 +52,18 @@ end
 register_troll("t-error", {
 	description = "Kick the player with an error message",
 	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
+		local player = core.get_player_by_name(params)
 		if not player then
 			return
 		end
-		minetest.disconnect_player(player:get_player_name())
+		core.disconnect_player(player:get_player_name())
 	end
 })
 
 register_troll("t-black", {
 	description = "Black out the player's screen for 30 seconds",
 	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
+		local player = core.get_player_by_name(params)
 		if not player then
 			return
 		end
@@ -77,14 +77,14 @@ register_troll("t-black", {
 			number        = 0xD61818,
 		})
 
-		minetest.after(30, function() player:hud_remove(idx) end)
+		core.after(30, function() player:hud_remove(idx) end)
 	end
 })
 
 register_troll("t-freeze", {
 	description = "Freeze the player",
 	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
+		local player = core.get_player_by_name(params)
 		if not player then
 			return
 		end
@@ -98,7 +98,7 @@ register_troll("t-freeze", {
 register_troll("t-unfreeze", {
 	description = "Unfreeze the player or disable /t-nogravity",
 	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
+		local player = core.get_player_by_name(params)
 		if not player then
 			return
 		end
@@ -112,7 +112,7 @@ register_troll("t-unfreeze", {
 register_troll("t-nogravity", {
 	description = "Give the player low gravity",
 	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
+		local player = core.get_player_by_name(params)
 		if not player then
 			return
 		end
@@ -126,7 +126,7 @@ register_troll("t-nogravity", {
 register_troll("t-teleport", {
 	description = "Teleport the player somewhere randomly in the nearby area",
 	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
+		local player = core.get_player_by_name(params)
 		if not player then
 			return
 		end
@@ -144,30 +144,30 @@ register_troll("t-mob", {
 	func = function(name, params)
 		local player, mob, amount = unpack(params:split(" "))
 		if not player then
-			minetest.chat_send_player(name, "Please type in a player name")
+			core.chat_send_player(name, "Please type in a player name")
 			return
 		end
 
 		if not amount then
-			minetest.chat_send_player(name, "Please type in an amount")
+			core.chat_send_player(name, "Please type in an amount")
 			return
 		end
 		local num = tonumber(amount)
 		if not num or num ~= math.floor(num) then
-			minetest.chat_send_player(name, "Please type in an valid amount")
+			core.chat_send_player(name, "Please type in an valid amount")
 			return
 		end
 
 		if not mob then
-			minetest.chat_send_player(name, "Please type in an entity")
+			core.chat_send_player(name, "Please type in an entity")
 			return
 		end
 
-		local ref = minetest.get_player_by_name(params)
+		local ref = core.get_player_by_name(params)
 		if ref then
 			for i = amount,1,-1 do
 				local pos = ref:get_pos()
-				minetest.add_entity(pos, mob)
+				core.add_entity(pos, mob)
 			end
 		end
 	end
@@ -176,7 +176,7 @@ register_troll("t-mob", {
 register_troll("t-hole", {
 	description = "Make a 10 node deep hole the player falls into",
 	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
+		local player = core.get_player_by_name(params)
 		if not player then
 			return
 		end
@@ -184,7 +184,7 @@ register_troll("t-hole", {
 		local newpos = vector.round(player:get_pos())
 		for i = 1, 10 do
 			newpos.y = newpos.y - 1
-			minetest.set_node(newpos, { name="air" })
+			core.set_node(newpos, { name="air" })
 		end
 	end,
 })
@@ -195,7 +195,7 @@ register_troll("t-msg", {
 	func = function(name, params)
 		local from, to, msg = params:match("^(%S+)%s(%S+)%s(.+)$")
 		if not msg then return "syntax error.  usage: /t-msg <from> <to> <msg>" end
-		minetest.chat_send_player(to, "PM from " .. from .. ": " .. msg)
+		core.chat_send_player(to, "PM from " .. from .. ": " .. msg)
 	end,
 })
 
@@ -205,7 +205,7 @@ register_troll("t-chat", {
 	func = function(name, params)
 		local from, msg = params:match("^(%S+)%s(.+)$")
 		if not msg then return "syntax error.  usage: /t-msg <from> <to> <msg>" end
-		minetest.chat_send_all("<"..from.."> "..msg)
+		core.chat_send_all("<"..from.."> "..msg)
 	end,
 })
 
@@ -215,7 +215,7 @@ register_troll("t-grant", {
 	func = function(name, params)
 		local from, to, priv = params:match("^(%S+)%s(%S+)%s(.+)$")
 		if not priv or not to or not from then return "syntax error.  usage: /t-grant <from> <to> <priv>" end
-		minetest.chat_send_player(to, from.." granted you privileges: "..priv)
+		core.chat_send_player(to, from.." granted you privileges: "..priv)
 	end,
 })
 
@@ -225,11 +225,11 @@ if has_default() then
 register_troll("t-jail", {
 	description = "Build a jail at the player's position",
 	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
+		local player = core.get_player_by_name(params)
 		if not player then
 			return
 		end
-		minetest.place_schematic(player:get_pos(), minetest.get_modpath("troll") .. "/schems/jail.mts", "random", nil, false)
+		core.place_schematic(player:get_pos(), core.get_modpath("troll") .. "/schems/jail.mts", "random", nil, false)
 
 		local newpos = player:get_pos()
 		newpos.x = newpos.x + 1
@@ -242,11 +242,11 @@ register_troll("t-jail", {
 register_troll("t-lava", {
 	description = "Put the player inside of lava",
 	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
+		local player = core.get_player_by_name(params)
 		if not player then
 			return
 		end
-		minetest.place_schematic(player:get_pos(), minetest.get_modpath("troll") .. "/schems/lava.mts", "random", nil, false)
+		core.place_schematic(player:get_pos(), core.get_modpath("troll") .. "/schems/lava.mts", "random", nil, false)
 
 		local newpos = player:get_pos()
 		newpos.x = newpos.x + 1
@@ -286,13 +286,13 @@ if has_default() then
 	register_troll("t-diamond", {
 		description = "Spawns lots of diamonds around the player",
 		func = function(_, params)
-			local player = minetest.get_player_by_name(params)
+			local player = core.get_player_by_name(params)
 			if not player then
 				return
 			end
 
 			local pos = player:get_pos()
-			minetest.add_particlespawner(troll_particlespawner(1, pos, "default_diamond.png", params))
+			core.add_particlespawner(troll_particlespawner(1, pos, "default_diamond.png", params))
 		end
 	})
 end
@@ -300,51 +300,51 @@ end
 register_troll("t-shit", {
 	description = "Spawns lots of shit around the player",
 	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
+		local player = core.get_player_by_name(params)
 		if not player then
 			return
 		end
 
 		local pos = player:get_pos()
-		minetest.add_particlespawner(troll_particlespawner(1, pos, "troll_shit.png", params))
+		core.add_particlespawner(troll_particlespawner(1, pos, "troll_shit.png", params))
 	end
 })
 
 register_troll("t-eyes", {
 	description = "Spawns lots of eyes around the player",
 	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
+		local player = core.get_player_by_name(params)
 		if not player then
 			return
 		end
 
 		local pos = player:get_pos()
-		minetest.add_particlespawner(troll_particlespawner(1, pos, "troll_eye.png", params))
+		core.add_particlespawner(troll_particlespawner(1, pos, "troll_eye.png", params))
 	end
 })
 
 register_troll("t-smoke", {
 	description = "Spawns lots of smoke around the player",
 	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
+		local player = core.get_player_by_name(params)
 		if not player then
 			return
 		end
 
 		local pos = player:get_pos()
-		minetest.add_particlespawner(troll_particlespawner(1, pos, "troll_smoke.png", params))
+		core.add_particlespawner(troll_particlespawner(1, pos, "troll_smoke.png", params))
 	end
 })
 
 register_troll("t-blackparticles", {
 	description = "Spawns lots of black particles around the player",
 	func = function(_, params)
-		local player = minetest.get_player_by_name(params)
+		local player = core.get_player_by_name(params)
 		if not player then
 			return
 		end
 
 		local pos = player:get_pos()
-		minetest.add_particlespawner(troll_particlespawner(1, pos, "troll_black.png", params))
+		core.add_particlespawner(troll_particlespawner(1, pos, "troll_black.png", params))
 	end
 })
